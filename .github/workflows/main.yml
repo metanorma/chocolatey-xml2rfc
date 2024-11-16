@@ -30,7 +30,7 @@ jobs:
       with:
         name: nupkg
 
-    - run: choco install --no-progress xml2rfc -dv -s "'.;https://chocolatey.org/api/v2/'"
+    - run: choco install --no-progress --ignore-dependencies xml2rfc -dv -s "'.;https://chocolatey.org/api/v2/'"
 
     - name: test xml2rfc available in PATH
       run: |

@@ -3,8 +3,6 @@ param (
     [string]$pythonExe = "python"
 )
 
-$pythonExe = Join-Path (Get-ChocolateyBinRoot) "python.exe"
-
 $packageUrl = "https://github.com/ietf-tools/xml2rfc/releases/download/v${packageVersion}/xml2rfc-${packageVersion}.tar.gz"
 $venvDir = "${env:ChocolateyInstall}\lib\xml2rfc"
 
