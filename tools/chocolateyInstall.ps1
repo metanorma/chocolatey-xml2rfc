@@ -9,5 +9,5 @@ $venvDir = "${env:ChocolateyInstall}\lib\xml2rfc"
 & "$pythonExe" -m venv $venvDir
 & "$venvDir\Scripts\pip" install $packageUrl
 
-$executablePath = "$venvDir\Scripts\xml2rfc"
-Install-ChocolateyBin $executablePath
+$executablePath = "$venvDir\Scripts\xml2rfc.exe"
+Install-BinFile -Name xml2rfc -Path $executablePath
