@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>xml2rfc</id>
+    <version>3.24.0</version>
+    <authors>IETF</authors>
+    <owners>IETF</owners>
+    <title>xml2rfc</title>
+    <description>xml2rfc is a tool used to process XML-based RFC documents into formats such as plain text, HTML, or PDF.</description>
+    <summary>Convert XML RFC documents to various output formats.</summary>
+    <projectUrl>https://xml2rfc.tools.ietf.org/</projectUrl>
+    <licenseUrl>https://www.rfc-editor.org/license.html</licenseUrl>
+    <tags>ietf xml rfc xml2rfc</tags>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <dependencies>
+      <dependency id="python3" version="[3.0.1,)"/>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools"/>
+  </files>
+</package>
+
