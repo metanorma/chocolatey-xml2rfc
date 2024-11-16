@@ -32,11 +32,6 @@ jobs:
 
     - run: choco install --no-progress --ignore-dependencies xml2rfc -dv -s "'.;https://chocolatey.org/api/v2/'"
 
-    - name: test xml2rfc available in PATH
-      run: |
-        Update-SessionEnvironment
-        Get-Command xml2rfc
-
     - name: test version
       run: |
         & xml2rfc --version
