@@ -1,0 +1,5 @@
+image:https://github.com/metanorma/chocolatey-xml2rfc/workflows/main/badge.svg["Build Status", link="https://github.com/metanorma/chocolatey-xml2rfc/actions"]
+image:https://img.shields.io/chocolatey/v/xml2rfc.svg["Version", link="https://chocolatey.org/packages/xml2rfc"]
+image:https://img.shields.io/chocolatey/dt/xml2rfc.svg["Downloads", link="https://chocolatey.org/packages/xml2rfc"]
+
+= chocolatey-xml2rfc: Chocolatey install for xml2rfc
