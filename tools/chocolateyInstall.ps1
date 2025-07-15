@@ -1,5 +1,5 @@
 param (
-    [string]$packageVersion = "3.24.0",
+    [string]$packageVersion = "3.29.0",
     [string]$pythonExe = "python"
 )
 
