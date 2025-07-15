@@ -1,5 +1,9 @@
 name: auto-update
 
+permissions:
+  contents: write
+  pull-requests: write
+
 on:
   schedule:
     # Run every day at 6:00 AM UTC
