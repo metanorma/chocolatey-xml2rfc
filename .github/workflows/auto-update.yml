@@ -80,7 +80,7 @@ jobs:
         EOF
 
         # Update chocolateyInstall.ps1 version
-        sed -i "s/packageVersion = \"[^\"]*\"/packageVersion = \"$new_version\"/" tools/chocolateyInstall.ps1
+        sed -i "s/\[string\]\$packageVersion = \"[^\"]*\"/[string]\$packageVersion = \"$new_version\"/" tools/chocolateyInstall.ps1
 
     - name: Verify updates
       if: steps.version-check.outputs.has-update == 'true'
