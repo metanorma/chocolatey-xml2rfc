@@ -40,12 +40,24 @@ jobs:
         echo "version=$current_version" >> $GITHUB_OUTPUT
         echo "Current version: $current_version"
 
+        # Validate current version is not empty or null
+        if [ -z "$current_version" ] || [ "$current_version" = "null" ]; then
+          echo "❌ Error: Current version is empty or null"
+          exit 1
+        fi
+
     - name: Get latest xml2rfc version from GitHub
       id: latest-version
       run: |
         latest_version=$(curl -s https://api.github.com/repos/ietf-tools/xml2rfc/releases/latest | jq -r '.tag_name' | sed 's/^v//')
         echo "version=$latest_version" >> $GITHUB_OUTPUT
         echo "Latest version: $latest_version"
+
+        # Validate latest version is not empty or null
+        if [ -z "$latest_version" ] || [ "$latest_version" = "null" ]; then
+          echo "❌ Error: Latest version is empty or null"
+          exit 1
+        fi
 
     - name: Compare versions
       id: version-check
@@ -70,14 +82,14 @@ jobs:
         new_version="${{ steps.latest-version.outputs.version }}"
         echo "Updating package to version: $new_version"
 
-        # Update nuspec version
-        xmllint --shell xml2rfc.nuspec << EOF
-        setns ns=http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd
-        cd /ns:package/ns:metadata/ns:version
-        set $new_version
-        save
-        exit
-        EOF
+        # Final validation before updating
+        if [ -z "$new_version" ] || [ "$new_version" = "null" ]; then
+          echo "❌ Error: Cannot update to null or empty version"
+          exit 1
+        fi
+
+        # Update nuspec version using sed (more reliable than xmllint shell)
+        sed -i "s|<version>[^<]*</version>|<version>$new_version</version>|" xml2rfc.nuspec
 
         # Update chocolateyInstall.ps1 version
         sed -i "s/\[string\]\$packageVersion = \"[^\"]*\"/[string]\$packageVersion = \"$new_version\"/" tools/chocolateyInstall.ps1
