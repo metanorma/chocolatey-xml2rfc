@@ -1,0 +1,127 @@
+name: auto-update
+
+on:
+  schedule:
+    # Run every day at 6:00 AM UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      auto_release:
+        description: 'Automatically create release after update'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  check-and-update:
+    runs-on: ubuntu-latest
+    outputs:
+      has-update: ${{ steps.version-check.outputs.has-update }}
+      latest-version: ${{ steps.version-check.outputs.latest-version }}
+      current-version: ${{ steps.version-check.outputs.current-version }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.METANORMA_CI_PAT_TOKEN }}
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update -y
+        sudo apt-get install -y libxml2-utils jq
+
+    - name: Get current version from nuspec
+      id: current-version
+      run: |
+        current_version=$(xmllint --xpath "string(//*[local-name()='version'])" xml2rfc.nuspec)
+        echo "version=$current_version" >> $GITHUB_OUTPUT
+        echo "Current version: $current_version"
+
+    - name: Get latest xml2rfc version from GitHub
+      id: latest-version
+      run: |
+        latest_version=$(curl -s https://api.github.com/repos/ietf-tools/xml2rfc/releases/latest | jq -r '.tag_name' | sed 's/^v//')
+        echo "version=$latest_version" >> $GITHUB_OUTPUT
+        echo "Latest version: $latest_version"
+
+    - name: Compare versions
+      id: version-check
+      run: |
+        current="${{ steps.current-version.outputs.version }}"
+        latest="${{ steps.latest-version.outputs.version }}"
+
+        echo "current-version=$current" >> $GITHUB_OUTPUT
+        echo "latest-version=$latest" >> $GITHUB_OUTPUT
+
+        if [ "$current" != "$latest" ]; then
+          echo "has-update=true" >> $GITHUB_OUTPUT
+          echo "New version available: $latest (current: $current)"
+        else
+          echo "has-update=false" >> $GITHUB_OUTPUT
+          echo "No update needed. Current version $current is up to date."
+        fi
+
+    - name: Update package files
+      if: steps.version-check.outputs.has-update == 'true'
+      run: |
+        new_version="${{ steps.latest-version.outputs.version }}"
+        echo "Updating package to version: $new_version"
+
+        # Update nuspec version
+        xmllint --shell xml2rfc.nuspec << EOF
+        setns ns=http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd
+        cd /ns:package/ns:metadata/ns:version
+        set $new_version
+        save
+        exit
+        EOF
+
+        # Update chocolateyInstall.ps1 version
+        sed -i "s/packageVersion = \"[^\"]*\"/packageVersion = \"$new_version\"/" tools/chocolateyInstall.ps1
+
+    - name: Verify updates
+      if: steps.version-check.outputs.has-update == 'true'
+      run: |
+        echo "Updated nuspec version:"
+        xmllint --xpath "string(//*[local-name()='version'])" xml2rfc.nuspec
+        echo ""
+        echo "Updated chocolateyInstall.ps1:"
+        grep "packageVersion" tools/chocolateyInstall.ps1
+
+    - name: Commit and push changes
+      if: steps.version-check.outputs.has-update == 'true'
+      run: |
+        git config --global user.name "metanorma-ci"
+        git config --global user.email "metanorma-ci@users.noreply.github.com"
+        git add xml2rfc.nuspec tools/chocolateyInstall.ps1
+        git commit -m "Update xml2rfc to version ${{ steps.latest-version.outputs.version }}"
+        git push origin main
+
+    - name: Create and push tag
+      if: steps.version-check.outputs.has-update == 'true' && (github.event.inputs.auto_release == 'true' || github.event_name == 'schedule')
+      run: |
+        git tag v${{ steps.latest-version.outputs.version }}
+        git push origin v${{ steps.latest-version.outputs.version }}
+
+  notify:
+    needs: check-and-update
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+    - name: Notify results
+      run: |
+        if [ "${{ needs.check-and-update.outputs.has-update }}" == "true" ]; then
+          if [ "${{ needs.check-and-update.result }}" == "success" ]; then
+            echo "✅ Successfully updated xml2rfc to version ${{ needs.check-and-update.outputs.latest-version }}"
+            if [ "${{ github.event.inputs.auto_release }}" == "true" ] || [ "${{ github.event_name }}" == "schedule" ]; then
+              echo "🚀 Release tag v${{ needs.check-and-update.outputs.latest-version }} created"
+              echo "📦 Package will be built and published automatically via main workflow"
+            else
+              echo "ℹ️ To create a release, run the release-tag workflow or push a tag manually"
+            fi
+          else
+            echo "❌ Failed to update xml2rfc package"
+            exit 1
+          fi
+        else
+          echo "ℹ️ No xml2rfc update available. Current version ${{ needs.check-and-update.outputs.current-version }} is up to date."
+        fi
