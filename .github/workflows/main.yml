@@ -30,6 +30,9 @@ jobs:
       with:
         name: nupkg
 
+    - name: Install Python 3 dependency
+      run: choco install python3 -y
+
     - run: choco install --no-progress --ignore-dependencies xml2rfc -dv -s "'.;https://chocolatey.org/api/v2/'"
 
     - name: test version
