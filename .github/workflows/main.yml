@@ -49,13 +49,65 @@ jobs:
       with:
         name: nupkg
 
-    - name: push to chocolatey
-      env:
-        CHOCO_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
+    - name: Get package version
+      id: package_version
       run: |
         $namespaces = @{nuspec = "http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd"}
         $pkgVersion = Select-Xml -Path xml2rfc.nuspec `
              -XPath "/nuspec:package/nuspec:metadata/nuspec:version/text()" `
              -Namespace $namespaces | Select-Object -Expand Node | Select-Object -Expand Data
+        echo "version=$pkgVersion" >> $env:GITHUB_OUTPUT
+        echo "Package version: $pkgVersion"
+
+    - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref_name }}
+        release_name: xml2rfc ${{ github.ref_name }}
+        body: |
+          ## xml2rfc Chocolatey Package ${{ github.ref_name }}
+
+          This release contains the xml2rfc chocolatey package.
+
+          ### Installation
+
+          Download the .nupkg file and install with:
+          ```
+          choco install xml2rfc.nupkg
+          ```
+
+          Or install directly from this release:
+          ```
+          choco install xml2rfc --source="https://github.com/metanorma/chocolatey-xml2rfc/releases/download/${{ github.ref_name }}"
+          ```
+
+          ### Package Contents
+          - xml2rfc installation via pip
+          - Automatic Python detection
+          - Chocolatey executable registration
+
+          ### Requirements
+          - Python 3.x installed and available in PATH
+          - pip package manager
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.METANORMA_CI_PAT_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: xml2rfc.${{ steps.package_version.outputs.version }}.nupkg
+        asset_name: xml2rfc.${{ steps.package_version.outputs.version }}.nupkg
+        asset_content_type: application/zip
+
+    - name: push to chocolatey
+      env:
+        CHOCO_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
+      run: |
         choco apikey -key $Env:CHOCO_API_KEY -source https://chocolatey.org/
-        choco push xml2rfc.${pkgVersion}.nupkg -source https://chocolatey.org/
+        choco push xml2rfc.${{ steps.package_version.outputs.version }}.nupkg -source https://chocolatey.org/
