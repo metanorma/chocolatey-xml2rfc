@@ -5,11 +5,18 @@
     <version>3.29.0</version>
     <authors>IETF</authors>
     <owners>IETF</owners>
-    <title>xml2rfc</title>
+    <title>XML2RFC - IETF RFC Document Generator</title>
     <description>xml2rfc is a tool used to process XML-based RFC documents into formats such as plain text, HTML, or PDF.</description>
     <summary>Convert XML RFC documents to various output formats.</summary>
     <projectUrl>https://xml2rfc.tools.ietf.org/</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/ietf-tools/common/main/assets/logos/xml2rfc.svg</iconUrl>
     <licenseUrl>https://www.rfc-editor.org/license.html</licenseUrl>
+    <packageSourceUrl>https://github.com/metanorma/chocolatey-xml2rfc</packageSourceUrl>
+    <projectSourceUrl>https://github.com/ietf-tools/xml2rfc</projectSourceUrl>
+    <docsUrl>https://authors.ietf.org/en/rfcxml-vocabulary</docsUrl>
+    <mailingListUrl>https://github.com/ietf-tools/xml2rfc/discussions</mailingListUrl>
+    <bugTrackerUrl>https://github.com/ietf-tools/xml2rfc/issues</bugTrackerUrl>
+    <releaseNotes>https://github.com/ietf-tools/xml2rfc/blob/main/CHANGELOG.md</releaseNotes>
     <tags>ietf xml rfc xml2rfc</tags>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <dependencies>
