@@ -1,5 +1,235 @@
+= chocolatey-xml2rfc: Chocolatey install for xml2rfc
+
 image:https://github.com/metanorma/chocolatey-xml2rfc/workflows/main/badge.svg["Build Status", link="https://github.com/metanorma/chocolatey-xml2rfc/actions"]
 image:https://img.shields.io/chocolatey/v/xml2rfc.svg["Version", link="https://chocolatey.org/packages/xml2rfc"]
 image:https://img.shields.io/chocolatey/dt/xml2rfc.svg["Downloads", link="https://chocolatey.org/packages/xml2rfc"]
 
-= chocolatey-xml2rfc: Chocolatey install for xml2rfc
+== Repository purpose
+
+This repository is for developing the official xml2rfc Chocolatey package.
+End users should install xml2rfc directly from the official Chocolatey
+repository using standard Chocolatey commands.
+
+For end-user installation, see <<Installation from official repository>>.
+
+xml2rfc is a tool used to process XML-based RFC documents into formats such as
+plain text, HTML, or PDF. It is developed by the IETF and is essential for
+RFC document generation and processing.
+
+== Dependencies
+
+The xml2rfc Chocolatey package has the following dependency:
+
+* `python3` (version 3.0.1+)
+
+When installing xml2rfc via Chocolatey, Python 3 is resolved automatically if
+not already present on the system.
+
+The package creates an isolated Python virtual environment for xml2rfc
+installation to avoid conflicts with other Python packages.
+
+== Installation from official repository
+
+[source,shell]
+----
+choco install xml2rfc -y
+----
+
+or
+
+[source,shell]
+----
+cinst xml2rfc -y
+----
+
+This installs xml2rfc from the official Chocolatey community repository.
+
+== Installation from GitHub releases
+
+For users who prefer to install directly from GitHub releases or need a
+specific version not yet available in the official repository:
+
+. Go to the https://github.com/metanorma/chocolatey-xml2rfc/releases[GitHub releases page]
+
+. Find the desired release version (e.g., v3.30.0)
+
+. Download the `.nupkg` file to your current working directory
+
+. Install using local and official sources:
++
+[source,shell]
+----
+choco install xml2rfc -dv -s "'.;chocolatey"
+----
+
+This method allows Chocolatey to find the local `.nupkg` file while still
+resolving dependencies from the official repository.
+
+Replace `3.30.0` with the desired version number in the filename.
+
+
+== Using xml2rfc in Windows Docker containers
+
+For developers building Windows Docker containers that need xml2rfc, you can
+install either from the official Chocolatey repository or from local packages.
+
+=== Method 1: Install from official Chocolatey repository
+
+[source,dockerfile]
+----
+# Install Chocolatey (following the official method)
+RUN Set-ExecutionPolicy Bypass -Scope Process -Force; \
+    [System.Net.ServicePointManager]::SecurityProtocol = \
+    [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; \
+    iex ((New-Object System.Net.WebClient).DownloadString( \
+    'https://community.chocolatey.org/install.ps1'))
+
+# Install xml2rfc from official Chocolatey
+RUN choco install xml2rfc -y --no-progress
+
+# Verify installation
+RUN xml2rfc --version
+----
+
+=== Method 2: Install from local packages (recommended for CI/CD)
+
+[source,dockerfile]
+----
+# Install Chocolatey (following the official method)
+RUN Set-ExecutionPolicy Bypass -Scope Process -Force; \
+    [System.Net.ServicePointManager]::SecurityProtocol = \
+    [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; \
+    iex ((New-Object System.Net.WebClient).DownloadString( \
+    'https://community.chocolatey.org/install.ps1'))
+
+# Copy the .nupkg file to container
+COPY xml2rfc.3.30.0.nupkg C:/packages/
+
+# Enable global confirmation for Chocolatey commands
+RUN choco feature enable -n allowGlobalConfirmation
+
+# Install xml2rfc from local package with fallback to official repository
+RUN choco install xml2rfc --source='C:\packages;chocolatey' -y --no-progress
+
+# Verify installation
+RUN xml2rfc --version
+----
+
+The xml2rfc package will automatically install Python 3 if not already present.
+
+[example]
+====
+The package creates a virtual environment at `%ChocolateyInstall%\lib\xml2rfc`
+and registers the xml2rfc executable in the system PATH for global access.
+====
+
+== Modifying the package
+
+. Edit the `xml2rfc.nuspec` configuration file.
+. Edit the `./tools/chocolateyInstall.ps1` install script
+. Edit the `./tools/chocolateyUninstall.ps1` uninstall script
+. You **must** save your files with *UTF-8* character encoding without BOM.
+
+== Building the package
+
+* Run `choco pack` in the same directory as `xml2rfc.nuspec`
+
+NOTE: If you are running this from a command prompt/Powershell prompt, you must
+run it "`as Administrator`".
+
+== Testing the package
+
+=== Automated testing
+
+The repository includes GitHub Actions workflows that automatically test the
+package:
+
+* Build and pack the `.nupkg` file
+* Install the package with dependencies
+* Verify xml2rfc functionality
+* Test uninstallation
+
+The workflows run on every push and pull request to ensure package integrity.
+
+=== Manual testing
+
+NOTE: Manual testing should be done on a Virtual Machine (See:
+https://github.com/chocolatey/chocolatey-test-environment).
+
+In the package directory, use:
+
+* `choco install xml2rfc -dv -s "'$pwd;https://chocolatey.org/api/v2/'" -f` (Powershell)
+* `choco install xml2rfc -dv -s "'%cd%;https://chocolatey.org/api/v2/'" -f` (everywhere else)
+
+Or, use the full path:
+
+* `choco install xml2rfc --source 'c:\path\to\package;chocolatey' -f`
+
+NOTE: It is important to include the Chocolatey source in the source list to
+ensure remote dependencies can be resolved, otherwise Chocolatey will only
+attempt to resolve dependencies locally.
+
+After executing the install, ensure that `xml2rfc.exe` is installed by
+executing the following command from the command prompt:
+
+[source,shell]
+----
+xml2rfc --version
+----
+
+If it is properly installed, you will see the current version of xml2rfc.
+
+=== Testing uninstallation
+
+NOTE: The Chocolatey install path on Windows is typically `C:\ProgramData\chocolatey`
+
+Execute the following command to uninstall xml2rfc.
+
+[source,shell]
+----
+choco uninstall xml2rfc -y
+----
+
+After executing the uninstall ensure that `xml2rfc` is not found in the
+Chocolatey install path.
+
+You can also try running `xml2rfc --version` from the command-line to see if it
+is still installed.
+
+== Automation
+
+This repository includes automated workflows for package maintenance:
+
+=== Auto-update workflow
+
+* Runs daily at 6:00 AM UTC
+* Checks for new xml2rfc releases from the upstream repository
+* Automatically updates package files and creates releases
+* Can be triggered manually with optional auto-release toggle
+
+=== Main workflow
+
+* Builds and tests the package on every push
+* Publishes to Chocolatey.org and GitHub releases when tags are created
+* Ensures package quality through automated testing
+
+The automation ensures the xml2rfc Chocolatey package stays current with
+upstream releases without manual intervention.
+
+== Publish the package to the Chocolatey community feed repository
+
+[source,shell]
+----
+choco apikey -k [API_KEY_HERE] -source https://chocolatey.org/
+
+# package name can be omitted below
+choco push xml2rfc.[version num].nupkg -s https://chocolatey.org/
+----
+
+== Copyright and license
+
+Copyright IETF. Licensed under the same terms as
+https://github.com/ietf-tools/xml2rfc[xml2rfc].
+
+See the https://github.com/chocolatey/choco/wiki/CreatePackagesQuickStart[Chocolatey Packages Quick Start]
+for more information.
