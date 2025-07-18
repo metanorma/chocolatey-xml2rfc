@@ -17,7 +17,8 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - run: choco pack
+    - name: Build xml2rfc package
+      run: choco pack
 
     - uses: actions/upload-artifact@v4
       with:
@@ -34,12 +35,10 @@ jobs:
       with:
         name: nupkg
 
-    - name: Install Python 3 dependency
-      run: choco install python3 -y
+    - name: Install xml2rfc
+      run: choco install --no-progress --ignore-dependencies xml2rfc -dv -s "'.;https://chocolatey.org/api/v2/'"
 
-    - run: choco install --no-progress --ignore-dependencies xml2rfc -dv -s "'.;https://chocolatey.org/api/v2/'"
-
-    - name: test version
+    - name: Test xml2rfc version
       run: |
         & xml2rfc --version
 
