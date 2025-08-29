@@ -20,7 +20,7 @@
     <tags>ietf xml rfc xml2rfc</tags>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <dependencies>
-      <dependency id="python3" version="[3.0.1,)"/>
+      <dependency id="python3" version="[3.8,3.13)" />
     </dependencies>
   </metadata>
   <files>
